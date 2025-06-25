@@ -79,6 +79,8 @@
     }
     label i {
       margin-right: 8px;
+      min-width: 20px;
+      text-align: center;
     }
     input,
     datalist,
@@ -101,6 +103,7 @@
       width: 100%;
       display: block;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
     .btn:hover {
       background: #0277bd;
@@ -129,6 +132,7 @@
       padding: 12px;
       border-bottom: 1px solid #ddd;
       font-size: 0.95em;
+      word-break: break-word;
     }
     th {
       background: #0288d1;
@@ -158,14 +162,46 @@
       width: 100%;
       font-size: 1em;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
     .reportes-toggle button:hover {
       background: #388e3c;
     }
-    @media screen and (max-width: 480px) {
+    /* Móvil */
+    @media screen and (max-width: 600px) {
+      body {
+        padding: 5px;
+      }
+      .formulario label,
+      .formulario input,
+      .formulario button,
+      .busqueda input,
+      .busqueda button {
+        font-size: 1.2em;
+      }
+      input,
+      select,
+      datalist {
+        padding: 14px;
+      }
+      .btn,
+      .reportes-toggle button {
+        padding: 14px;
+        font-size: 1.3em;
+      }
+      table,
       th,
       td {
-        font-size: 0.85em;
+        font-size: 0.9em;
+      }
+      tbody tr {
+        min-height: 50px;
+      }
+      header h1 {
+        font-size: 1.5em;
+      }
+      .marquesina span {
+        font-size: 1em;
       }
     }
   </style>
@@ -183,17 +219,27 @@
   </div>
 
   <div class="formulario">
-    <label
-      ><i class="fas fa-user"></i> Nombre del Cliente</label
-    >
-    <input type="text" id="cliente" list="lista-clientes" />
+    <label><i class="fas fa-user"></i> Nombre del Cliente</label>
+    <input type="text" id="cliente" list="lista-clientes" autocomplete="off" />
     <datalist id="lista-clientes"></datalist>
 
-    <label><i class="fas fa-clock"></i> Inicio</label>
-    <input type="datetime-local" id="inicio" />
+    <!-- Para desktop -->
+    <div class="input-completo">
+      <label><i class="fas fa-clock"></i> Inicio</label>
+      <input type="datetime-local" id="inicio" />
+      <label><i class="fas fa-hourglass-end"></i> Fin</label>
+      <input type="datetime-local" id="fin" />
+    </div>
 
-    <label><i class="fas fa-hourglass-end"></i> Fin</label>
-    <input type="datetime-local" id="fin" />
+    <!-- Para móvil -->
+    <div class="input-separado" style="display:none;">
+      <label><i class="fas fa-calendar-alt"></i> Fecha</label>
+      <input type="date" id="fecha-movil" />
+      <label><i class="fas fa-clock"></i> Hora Inicio</label>
+      <input type="time" id="hora-inicio-movil" />
+      <label><i class="fas fa-hourglass-end"></i> Hora Fin</label>
+      <input type="time" id="hora-fin-movil" />
+    </div>
 
     <button class="btn" onclick="registrarCliente()">
       <i class="fas fa-save"></i> Registrar
@@ -247,6 +293,13 @@
   </div>
 
   <script>
+    // Detectar si es móvil
+    function esDispositivoMovil() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+    }
+
     let totalClientes = 0,
       totalHoras = 0,
       totalDinero = 0;
@@ -256,6 +309,15 @@
     let registrosGraficos = [];
 
     window.onload = () => {
+      if (esDispositivoMovil()) {
+        document.querySelector(".input-completo").style.display = "none";
+        document.querySelector(".input-separado").style.display = "block";
+      } else {
+        document.querySelector(".input-completo").style.display = "block";
+        document.querySelector(".input-separado").style.display = "none";
+      }
+
+      // Cargar historial de hoy si existe
       const ultima = localStorage.getItem("ultima_fecha");
       if (ultima !== hoy) {
         localStorage.setItem("ultima_fecha", hoy);
@@ -283,10 +345,24 @@
 
     function registrarCliente() {
       const cliente = document.getElementById("cliente").value.trim();
-      const inicio = new Date(document.getElementById("inicio").value);
-      const fin = new Date(document.getElementById("fin").value);
-      if (!cliente || isNaN(inicio) || isNaN(fin))
-        return alert("Completa todos los campos.");
+      let inicio, fin;
+
+      if (esDispositivoMovil()) {
+        const fecha = document.getElementById("fecha-movil").value;
+        const horaInicio = document.getElementById("hora-inicio-movil").value;
+        const horaFin = document.getElementById("hora-fin-movil").value;
+        if (!fecha || !horaInicio || !horaFin || !cliente)
+          return alert("Completa todos los campos.");
+
+        inicio = new Date(`${fecha}T${horaInicio}`);
+        fin = new Date(`${fecha}T${horaFin}`);
+      } else {
+        inicio = new Date(document.getElementById("inicio").value);
+        fin = new Date(document.getElementById("fin").value);
+        if (!cliente || isNaN(inicio) || isNaN(fin))
+          return alert("Completa todos los campos.");
+      }
+
       if (fin <= inicio) return alert("La hora de fin debe ser posterior a inicio.");
 
       const horas = (fin - inicio) / 3600000;
@@ -333,9 +409,16 @@
         }, restante);
       }
 
+      // Limpiar campos
       document.getElementById("cliente").value = "";
-      document.getElementById("inicio").value = "";
-      document.getElementById("fin").value = "";
+      if (esDispositivoMovil()) {
+        document.getElementById("fecha-movil").value = "";
+        document.getElementById("hora-inicio-movil").value = "";
+        document.getElementById("hora-fin-movil").value = "";
+      } else {
+        document.getElementById("inicio").value = "";
+        document.getElementById("fin").value = "";
+      }
     }
 
     function agregarFila(r) {
@@ -361,7 +444,8 @@
       const fecha = document.getElementById("fecha-busqueda").value;
       const datos = JSON.parse(localStorage.getItem(`historial_${fecha}`) || "[]");
       const cont = document.getElementById("resultado-historial");
-      if (!datos.length) return (cont.innerHTML = "<p>No hay registros para esa fecha.</p>");
+      if (!datos.length)
+        return (cont.innerHTML = "<p>No hay registros para esa fecha.</p>");
       let html =
         '<table><thead><tr><th>Cliente</th><th>Inicio</th><th>Fin</th><th>Horas</th><th>Total</th></tr></thead><tbody>';
       datos.forEach((r) => {
@@ -372,11 +456,17 @@
     }
 
     function actualizarGraficos() {
+      if (!registrosGraficos.length) return;
+
       const labels = registrosGraficos.map((r) => r.cliente);
       const dataValores = registrosGraficos.map((r) => parseFloat(r.total));
 
+      // Eliminar gráficos previos para no sobreponer
+      if (window.chartBar) window.chartBar.destroy();
+      if (window.chartPie) window.chartPie.destroy();
+
       const ctx1 = document.getElementById("graficoBarras").getContext("2d");
-      new Chart(ctx1, {
+      window.chartBar = new Chart(ctx1, {
         type: "bar",
         data: {
           labels,
@@ -388,11 +478,11 @@
             },
           ],
         },
-        options: { responsive: true },
+        options: { responsive: true, maintainAspectRatio: false },
       });
 
       const ctx2 = document.getElementById("graficoPastel").getContext("2d");
-      new Chart(ctx2, {
+      window.chartPie = new Chart(ctx2, {
         type: "doughnut",
         data: {
           labels,
@@ -406,7 +496,7 @@
             },
           ],
         },
-        options: { responsive: true },
+        options: { responsive: true, maintainAspectRatio: false },
       });
     }
 
