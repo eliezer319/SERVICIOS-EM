@@ -3,157 +3,418 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Servicios EM - Registro y Búsqueda con Firebase</title>
+  <title>Servicios EM</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://kit.fontawesome.com/a2d9a66f4c.js" crossorigin="anonymous"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
     body {
-      font-family: Arial, sans-serif;
-      padding: 15px;
-      background: linear-gradient(to bottom, #e3f2fd, #e8f5e9);
-      color: #263238;
       margin: 0;
-      min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      height: 100vh;
+      background: linear-gradient(135deg, #6dd5ed, #2193b0);
+      color: #222;
+      overflow: hidden;
+      flex-direction: column;
     }
+
+    /* Encabezado principal */
     header {
-      background-color: #01579b;
+      background: #0d47a1;
       color: white;
-      padding: 20px;
+      padding: 30px 10px 10px 10px;
       text-align: center;
-      border-radius: 0 0 12px 12px;
-      margin-bottom: 15px;
+      user-select: none;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+      z-index: 1001;
+      position: relative; /* para que la marquesina pueda ubicarse debajo */
     }
     header h1 {
       margin: 0;
-      font-size: 2em;
+      font-size: 2.8em;
+      letter-spacing: 2px;
+      font-weight: 700;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+    }
+    header h1 i {
+      font-size: 1.8em;
+      color: #21cbf3;
+      text-shadow: 0 0 10px #21cbf3;
     }
     header p {
-      margin: 5px 0 0;
-      font-size: 1em;
-      font-weight: 500;
+      font-size: 1.2em;
+      margin: 6px 0 0 0;
+      font-style: italic;
+      color: #a9c9ff;
     }
+    header small {
+      font-size: 1em;
+      color: #cfdfff;
+      margin-top: 4px;
+      display: block;
+    }
+
+    /* Marquesina ajustada para no tapar el header */
     .marquesina {
-      background: #ffca28;
-      color: #1a237e;
+      position: relative;
+      top: 0;
+      left: 0; right: 0;
+      background: #ffdd57;
+      color: #222;
+      font-weight: 600;
+      font-size: 1.1em;
       padding: 10px 0;
-      font-weight: bold;
-      overflow: hidden;
       white-space: nowrap;
-      margin-bottom: 20px;
-      border-radius: 8px;
+      overflow: hidden;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      user-select: none;
+      margin-bottom: 10px;
     }
     .marquesina span {
       display: inline-block;
       padding-left: 100%;
-      animation: mover 20s linear infinite;
+      animation: scroll-left 15s linear infinite;
     }
-    @keyframes mover {
-      0% {
-        transform: translateX(0);
-      }
-      100% {
-        transform: translateX(-100%);
-      }
+    @keyframes scroll-left {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
     }
-    input, button {
-      padding: 10px;
-      margin: 8px 0;
-      font-size: 1em;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      width: 100%;
-      max-width: 400px;
+
+    /* Layout principal: sidebar + contenido */
+    .container {
+      display: flex;
+      flex-grow: 1;
+      height: calc(100vh - 170px);
+      overflow: hidden;
+    }
+
+    aside {
+      width: 280px;
+      background: #0d47a1;
+      color: white;
+      padding: 30px 20px 20px 20px;
       box-sizing: border-box;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      box-shadow: inset -3px 0 6px rgba(0,0,0,0.15);
+    }
+
+    aside h2 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+      text-align: center;
+      letter-spacing: 1.5px;
+      user-select: none;
+    }
+
+    aside p {
+      font-size: 0.95em;
+      margin: 4px 0;
+      text-align: center;
+    }
+
+    aside button {
+      background: linear-gradient(45deg, #2196f3, #21cbf3);
+      border: none;
+      color: white;
+      font-weight: 600;
+      font-size: 1.1em;
+      padding: 12px 18px;
+      margin: 10px 0;
+      width: 100%;
+      cursor: pointer;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 5px 15px rgba(33, 203, 243, 0.4);
+      transition: background 0.3s ease;
+    }
+    aside button i {
+      font-size: 1.4em;
+    }
+    aside button:hover {
+      background: linear-gradient(45deg, #21cbf3, #2196f3);
+      box-shadow: 0 6px 20px rgba(33, 203, 243, 0.7);
+    }
+
+    main {
+      flex-grow: 1;
+      padding: 50px 40px 20px 40px;
+      overflow-y: auto;
+      background: white;
+      box-shadow: inset 0 0 40px #c5d2f9;
+      border-top-left-radius: 30px;
+      border-bottom-left-radius: 30px;
+    }
+
+    main h2 {
+      text-align: center;
+      font-size: 2em;
+      color: #0d47a1;
+      margin-bottom: 20px;
+      user-select: none;
+    }
+
+    main p {
+      text-align: center;
+      font-size: 1.1em;
+      color: #555;
+      margin-bottom: 20px;
+      user-select: none;
+    }
+
+    /* Secciones con fondos brillantes diferentes */
+    #registrar {
+      background: #ffefc2; /* amarillo claro */
+      padding: 25px 30px;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px #fbc02d88;
+    }
+    #buscar {
+      background: #c2f0ff; /* celeste claro */
+      padding: 25px 30px;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px #29b6f688;
+    }
+    #ventas {
+      background: #ffc2c2; /* rosa claro */
+      padding: 25px 30px;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px #e5737388;
+    }
+    #reporte {
+      background: #d7ffc2; /* verde claro */
+      padding: 25px 30px;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px #81c78488;
+    }
+
+    .seccion {
+      display: none;
+    }
+
+    .activa {
+      display: block;
+    }
+
+    input, select, button {
+      padding: 12px 15px;
+      margin: 12px 0;
+      width: 100%;
+      max-width: 500px;
+      font-size: 1.1em;
+      border: 2px solid #2196f3;
+      border-radius: 12px;
+      outline: none;
       transition: border-color 0.3s ease;
     }
-    input:focus {
-      border-color: #0288d1;
-      outline: none;
+    input:focus, select:focus {
+      border-color: #0d47a1;
+      box-shadow: 0 0 10px #0d47a1;
     }
+
     button {
-      background-color: #0288d1;
-      color: white;
+      background: linear-gradient(45deg, #2196f3, #21cbf3);
       border: none;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1em;
+      padding: 14px 20px;
+      border-radius: 14px;
       cursor: pointer;
-      max-width: 400px;
-      border-radius: 10px;
-      transition: background-color 0.3s ease;
+      box-shadow: 0 6px 20px rgba(33,203,243,0.7);
+      transition: background 0.3s ease;
+      user-select: none;
     }
     button:hover {
-      background-color: #0277bd;
+      background: linear-gradient(45deg, #21cbf3, #2196f3);
     }
-    h2 {
-      color: #01579b;
-      margin-top: 30px;
-      margin-bottom: 10px;
-    }
+
     table {
       border-collapse: collapse;
       width: 100%;
-      max-width: 700px;
-      background: #ffffffdd;
+      margin-top: 25px;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 15px rgb(33 203 243 / 0.4);
+      user-select: none;
     }
+
     th, td {
-      padding: 12px 15px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-      font-size: 0.95em;
+      padding: 14px 20px;
+      text-align: center;
+      border-bottom: 2px solid #2196f3;
     }
+
     th {
-      background-color: #0288d1;
+      background: linear-gradient(90deg, #2196f3, #21cbf3);
       color: white;
+      font-weight: 700;
+      font-size: 1.1em;
+    }
+
+    td {
+      background: #e3f2fd;
       font-weight: 600;
+      color: #0d47a1;
+      font-size: 1em;
     }
-    tr:nth-child(even) {
-      background-color: #f1f9ff;
+
+    td:nth-child(1) {
+      font-weight: 700;
+      color: #0b3d91;
     }
-    #registros-dia, #resultados-busqueda {
-      margin-top: 10px;
+
+    canvas {
+      max-width: 100%;
+      margin-top: 30px;
+      border-radius: 20px;
+      box-shadow: 0 5px 20px rgba(33,203,243,0.5);
+      user-select: none;
     }
-    #resultados-busqueda p, #registros-dia p {
-      font-style: italic;
-      color: #555;
-      max-width: 700px;
+
+    #reporte-contenedor {
+      margin-top: 20px;
+      background: #ffffff;
+      padding: 30px 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(33, 203, 243, 0.3);
     }
-    @media (max-width: 480px) {
-      input, button {
-        max-width: 100%;
+
+    #tipo-reporte {
+      max-width: 350px;
+      font-weight: 600;
+      color: #0d47a1;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Responsive */
+
+    @media(max-width: 720px) {
+      body {
+        flex-direction: column;
+        height: auto;
       }
-      table {
-        max-width: 100%;
-        font-size: 0.9em;
+      .container {
+        flex-direction: column;
+        height: auto;
+        margin-top: 0;
+      }
+      aside {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        padding: 15px;
+        box-shadow: 0 5px 15px rgba(13,71,161,0.7);
+        margin-top: 0;
+      }
+      aside button {
+        padding: 8px 12px;
+        font-size: 1em;
+        width: auto;
+        border-radius: 8px;
+        box-shadow: none;
+        gap: 6px;
+      }
+      main {
+        margin-top: 20px;
+        border-radius: 0;
+        padding: 20px 10px 40px 10px;
+        box-shadow: none;
+      }
+      table th, table td {
+        font-size: 0.85em;
+        padding: 10px 8px;
+      }
+      .marquesina {
+        position: relative;
+        margin-bottom: 10px;
       }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Servicios EM</h1>
-    <p>Boca de Remedios, Comarca Ngäbe-Buglé</p>
-  </header>
-  <div class="marquesina">
-    <span>🌐 Servicios EM - Venta de Internet Starlink por hora. ¡Solo 0.25 por hora! Conexión rápida y confiable. ¡Gracias por preferirnos! 🌟</span>
-  </div>
 
-  <h2>Registrar Cliente</h2>
-  <input type="text" id="cliente" placeholder="Nombre del cliente" />
-  <input type="datetime-local" id="inicio" />
-  <input type="datetime-local" id="fin" />
-  <button onclick="registrarCliente()">Guardar Registro</button>
+<header>
+  <h1><i class="fas fa-wifi"></i> Servicios EM</h1>
+  <p>Ubicación: Boca de Remedios, Comarca Ngöbe-Buglé</p>
+  <small>Correo: SERVICIOSEM3@gmail.com | Nos dedicamos a vender Internet Starlink a 25 centavos la hora</small>
+</header>
 
-  <h2>Registros del día (persistentes)</h2>
-  <div id="registros-dia"><p>Cargando registros...</p></div>
+<div class="marquesina">
+  <span>¡Bienvenidos a Servicios EM! Servicio confiable de internet Starlink a solo 25 centavos la hora. ¡Gracias por elegirnos!</span>
+</div>
 
-  <h2>Buscar por Cliente</h2>
-  <input type="text" id="busqueda-cliente" placeholder="Nombre cliente para buscar" />
-  <button onclick="buscarCliente()">Buscar</button>
-  <div id="resultados-busqueda"></div>
+<div class="container">
+  <aside>
+    <h2>Menú</h2>
+    <button onclick="mostrarSeccion('registrar')"><i class="fas fa-plus-circle"></i> Registrar Cliente</button>
+    <button onclick="mostrarSeccion('buscar')"><i class="fas fa-search"></i> Buscar Cliente</button>
+    <button onclick="mostrarSeccion('ventas')"><i class="fas fa-calendar-day"></i> Ventas del Día</button>
+    <button onclick="mostrarSeccion('reporte')"><i class="fas fa-chart-bar"></i> Reporte de Ventas</button>
+  </aside>
+
+  <main>
+    <!-- Registrar Cliente -->
+    <section id="registrar" class="seccion activa">
+      <h2>Registrar Cliente</h2>
+      <label for="cliente">Nombre del cliente</label>
+      <input type="text" id="cliente" list="clientes-lista" placeholder="Ej: Juan Pérez" autocomplete="off" />
+      <datalist id="clientes-lista"></datalist>
+
+      
+      <input type="datetime-local" id="inicio" /> <label for="inicio">Hora de inicio</label>
+
+            <input type="datetime-local" id="fin" /> <label for="fin">Hora de fin</label>
+
+      <button class="seccion-btn" onclick="registrarCliente()"><i class="fas fa-save"></i> Guardar Registro</button>
+    </section>
+
+    <section id="buscar" class="seccion">
+      <h2>Buscar por Cliente</h2>
+      <input type="text" id="busqueda-cliente" placeholder="Escribe el nombre para buscar" />
+      <button onclick="buscarCliente()"><i class="fas fa-search"></i> Buscar</button>
+      <div id="resultados"></div>
+    </section>
+
+    <section id="ventas" class="seccion">
+      <h2>Ventas del Día</h2>
+      <input type="date" id="fecha-venta" />
+      <button onclick="buscarVentasPorFecha()"><i class="fas fa-calendar-check"></i> Mostrar Ventas</button>
+      <button onclick="limpiarVentas()"><i class="fas fa-trash-alt"></i> Limpiar</button>
+      <div id="ventas-resultados"></div>
+    </section>
+
+    <section id="reporte" class="seccion">
+      <h2>Reporte de Ventas</h2>
+      <select id="tipo-reporte" onchange="generarReporte()">
+        <option value="dia">Ventas por Día</option>
+        <option value="mes">Ventas por Mes</option>
+        <option value="anio">Ventas por Año</option>
+        <option value="cliente">Ventas por Cliente</option>
+      </select>
+      <div id="reporte-contenedor">
+        <canvas id="chart"></canvas>
+      </div>
+    </section>
+  </main>
+</div>
 
 <script>
-  // Configura tu Firebase aquí (reemplaza con tus datos)
+  // Firebase config y setup
   const firebaseConfig = {
     apiKey: "AIzaSyCMvMidGE3EJMGWTiHwMCeiIFkY7TlNnPk",
     authDomain: "servicios-em.firebaseapp.com",
@@ -162,94 +423,16 @@
     messagingSenderId: "967794596063",
     appId: "1:967794596063:web:9249e6e6e9c4a003eff16a"
   };
-
-  // Inicializa Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // Llaves para localStorage
-  const LS_KEY = "registros_dia";
-  const LS_DAY_KEY = "registros_dia_fecha";
-
-  // Al cargar la página:
-  window.onload = () => {
-    checkYLimpiarLocal();
-  };
-
-  function checkYLimpiarLocal() {
-    const hoyStr = new Date().toISOString().slice(0,10); // 'YYYY-MM-DD'
-    const guardadoDia = localStorage.getItem(LS_DAY_KEY);
-
-    if (guardadoDia !== hoyStr) {
-      // Nuevo día, limpiar registros guardados localmente
-      localStorage.setItem(LS_KEY, JSON.stringify([]));
-      localStorage.setItem(LS_DAY_KEY, hoyStr);
-      document.getElementById("registros-dia").innerHTML = "<p>No hay registros para mostrar hoy.</p>";
-    } else {
-      // Mismo día, mostrar registros guardados
-      const registros = JSON.parse(localStorage.getItem(LS_KEY)) || [];
-      if (registros.length) {
-        mostrarRegistrosDia(registros);
-      } else {
-        document.getElementById("registros-dia").innerHTML = "<p>No hay registros para mostrar hoy.</p>";
-      }
-    }
+  // Controlar secciones
+  function mostrarSeccion(id) {
+    document.querySelectorAll('.seccion').forEach(sec => sec.classList.remove('activa'));
+    document.getElementById(id).classList.add('activa');
   }
 
-  function mostrarRegistrosDia(registros) {
-    const div = document.getElementById("registros-dia");
-    if (!registros.length) {
-      div.innerHTML = "<p>No hay registros para mostrar hoy.</p>";
-      return;
-    }
-    let html = `<table>
-      <thead>
-        <tr><th>Cliente</th><th>Inicio</th><th>Fin</th><th>Horas</th><th>Total</th></tr>
-      </thead><tbody>`;
-    registros.forEach(r => {
-      html += `<tr>
-        <td>${r.cliente}</td>
-        <td>${r.inicio}</td>
-        <td>${r.fin}</td>
-        <td>${Number(r.horas).toFixed(2)}</td>
-        <td>$${Number(r.total).toFixed(2)}</td>
-      </tr>`;
-    });
-    html += "</tbody></table>";
-    div.innerHTML = html;
-  }
-
-  function mostrarResultadosBusqueda(registros) {
-    const div = document.getElementById("resultados-busqueda");
-    if (!registros.length) {
-      div.innerHTML = "<p>No se encontraron registros para ese cliente.</p>";
-      return;
-    }
-    let html = `<table>
-      <thead>
-        <tr><th>Cliente</th><th>Inicio</th><th>Fin</th><th>Horas</th><th>Total</th></tr>
-      </thead><tbody>`;
-    registros.forEach(r => {
-      html += `<tr>
-        <td>${r.cliente}</td>
-        <td>${r.inicio}</td>
-        <td>${r.fin}</td>
-        <td>${Number(r.horas).toFixed(2)}</td>
-        <td>$${Number(r.total).toFixed(2)}</td>
-      </tr>`;
-    });
-    html += "</tbody></table>";
-    div.innerHTML = html;
-  }
-
-  // Guarda localmente para mantener la lista del día
-  function guardarLocal(registro) {
-    let registros = JSON.parse(localStorage.getItem(LS_KEY)) || [];
-    registros.push(registro);
-    localStorage.setItem(LS_KEY, JSON.stringify(registros));
-  }
-
-  // Función para registrar cliente (guardar en Firebase y local)
+  // Registro cliente
   function registrarCliente() {
     const cliente = document.getElementById("cliente").value.trim();
     const inicioVal = document.getElementById("inicio").value;
@@ -267,19 +450,6 @@
     const horas = (fin - inicio) / (1000 * 60 * 60);
     const total = (horas * 0.25).toFixed(2);
 
-    const registroLocal = {
-      cliente,
-      inicio: inicio.toLocaleString(),
-      fin: fin.toLocaleString(),
-      horas: Number(horas.toFixed(2)),
-      total: Number(total)
-    };
-
-    // Guardar localmente y actualizar tabla diaria
-    guardarLocal(registroLocal);
-    mostrarRegistrosDia(JSON.parse(localStorage.getItem(LS_KEY)));
-
-    // Guardar en Firebase
     db.collection("registros").add({
       cliente: cliente,
       clienteLower: cliente.toLowerCase(),
@@ -290,7 +460,6 @@
     })
     .then(() => {
       alert("Registro guardado correctamente.");
-      // Limpiar inputs
       document.getElementById("cliente").value = "";
       document.getElementById("inicio").value = "";
       document.getElementById("fin").value = "";
@@ -301,37 +470,199 @@
     });
   }
 
-  // Buscar cliente solo por nombre (sin fecha)
+  // Buscar cliente parcial
   function buscarCliente() {
     const clienteBuscado = document.getElementById("busqueda-cliente").value.trim().toLowerCase();
     if (!clienteBuscado) {
       alert("Ingresa un nombre de cliente para buscar.");
       return;
     }
-
     db.collection("registros")
-      .where("clienteLower", "==", clienteBuscado)
+      .orderBy("clienteLower")
+      .startAt(clienteBuscado)
+      .endAt(clienteBuscado + '\uf8ff')
       .get()
       .then((querySnapshot) => {
-        const resultados = [];
+        const resultadosDiv = document.getElementById("resultados");
+        if (querySnapshot.empty) {
+          resultadosDiv.innerHTML = "<p>No se encontraron registros para ese cliente.</p>";
+          return;
+        }
+        let html = `<table>
+          <thead>
+            <tr><th>Cliente</th><th>Inicio</th><th>Fin</th><th>Horas</th><th>Total</th></tr>
+          </thead><tbody>`;
+
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          resultados.push({
-            cliente: data.cliente,
-            inicio: data.inicio.toDate().toLocaleString(),
-            fin: data.fin.toDate().toLocaleString(),
-            horas: data.horas,
-            total: data.total
-          });
+          html += `<tr>
+            <td>${data.cliente}</td>
+            <td>${data.inicio.toDate().toLocaleString()}</td>
+            <td>${data.fin.toDate().toLocaleString()}</td>
+            <td>${data.horas}</td>
+            <td>$${data.total.toFixed(2)}</td>
+          </tr>`;
         });
-
-        mostrarResultadosBusqueda(resultados);
+        html += "</tbody></table>";
+        resultadosDiv.innerHTML = html;
       })
-      .catch((error) => {
-        console.error("Error al buscar:", error);
-        alert("Error al buscar los registros.");
+      .catch(error => {
+        console.error("Error buscando cliente:", error);
+        alert("Error al buscar cliente.");
       });
   }
+
+  // Buscar ventas por fecha
+  // Buscar ventas por fecha (CORREGIDO)
+function buscarVentasPorFecha() {
+  const fechaStr = document.getElementById("fecha-venta").value;
+  if (!fechaStr) {
+    alert("Selecciona una fecha para mostrar las ventas.");
+    return;
+  }
+
+  const fechaInicio = new Date(fechaStr + "T00:00:00");
+  const fechaFin = new Date(fechaStr + "T23:59:59");
+
+  db.collection("registros")
+    .where("inicio", ">=", firebase.firestore.Timestamp.fromDate(fechaInicio))
+    .where("inicio", "<=", firebase.firestore.Timestamp.fromDate(fechaFin))
+    .get()
+    .then(querySnapshot => {
+      const contenedor = document.getElementById("ventas-resultados"); // ID correcto
+      if (querySnapshot.empty) {
+        contenedor.innerHTML = "<p>No hay ventas para esta fecha.</p>";
+        return;
+      }
+
+      let html = `<table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Horas</th>
+            <th>Total</th>
+          </tr>
+        </thead><tbody>`;
+
+      querySnapshot.forEach(doc => {
+        const d = doc.data();
+        html += `<tr>
+          <td>${d.cliente}</td>
+          <td>${d.inicio.toDate().toLocaleString()}</td>
+          <td>${d.fin.toDate().toLocaleString()}</td>
+          <td>${d.horas.toFixed(2)}</td>
+          <td>$${d.total.toFixed(2)}</td>
+        </tr>`;
+      });
+
+      html += "</tbody></table>";
+      contenedor.innerHTML = html;
+    })
+    .catch(error => {
+      alert("Error al obtener ventas de la fecha.");
+      console.error(error);
+    });
+}
+
+
+
+  function limpiarVentas() {
+    document.getElementById("fecha-venta").value = "";
+    document.getElementById("ventas-resultados").innerHTML = "";
+  }
+
+  // Gráfico de ventas
+  let chart = null;
+
+  function generarReporte() {
+    const tipo = document.getElementById("tipo-reporte").value;
+    db.collection("registros").get().then(snapshot => {
+      const datos = snapshot.docs.map(doc => doc.data());
+
+      let agrupados = {};
+      if (tipo === "dia") {
+        datos.forEach(d => {
+          const dia = d.inicio.toDate().toLocaleDateString();
+          agrupados[dia] = (agrupados[dia] || 0) + d.total;
+        });
+      } else if (tipo === "mes") {
+        datos.forEach(d => {
+          const fecha = d.inicio.toDate();
+          const mes = `${fecha.getFullYear()}-${fecha.getMonth()+1}`;
+          agrupados[mes] = (agrupados[mes] || 0) + d.total;
+        });
+      } else if (tipo === "anio") {
+        datos.forEach(d => {
+          const anio = d.inicio.toDate().getFullYear();
+          agrupados[anio] = (agrupados[anio] || 0) + d.total;
+        });
+      } else if (tipo === "cliente") {
+        datos.forEach(d => {
+          agrupados[d.cliente] = (agrupados[d.cliente] || 0) + d.total;
+        });
+      }
+
+      const etiquetas = Object.keys(agrupados).sort();
+      const valores = etiquetas.map(k => agrupados[k].toFixed(2));
+
+      if (chart) chart.destroy();
+
+      const ctx = document.getElementById('chart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: etiquetas,
+          datasets: [{
+            label: 'Total Ventas ($)',
+            data: valores,
+            backgroundColor: 'rgba(33, 203, 243, 0.7)',
+            borderColor: 'rgba(33, 203, 243, 1)',
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }).catch(error => {
+      console.error("Error generando reporte:", error);
+      alert("Error al generar reporte.");
+    });
+  }
+
+  // Inicia con la sección registrar visible
+  mostrarSeccion('registrar');
+  cargarClientesExistentes();
+// Llenar datalist con nombres de clientes únicos de Firebase
+function cargarClientesExistentes() {
+  db.collection("registros").get().then(snapshot => {
+    const nombresUnicos = new Set();
+    snapshot.forEach(doc => {
+      const nombre = doc.data().cliente;
+      nombresUnicos.add(nombre);
+    });
+
+    const datalist = document.getElementById("clientes-lista");
+    datalist.innerHTML = "";
+    nombresUnicos.forEach(nombre => {
+      const option = document.createElement("option");
+      option.value = nombre;
+      datalist.appendChild(option);
+    });
+  });
+}
+
 </script>
 </body>
 </html>
