@@ -4,8 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>📡 Servicios EM - Registro de Clientes</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://kit.fontawesome.com/a2e0b5e6c4.js" crossorigin="anonymous"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+  <script
+    src="https://kit.fontawesome.com/a2e0b5e6c4.js"
+    crossorigin="anonymous"
+  ></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * {
@@ -26,11 +32,10 @@
     }
     header h1 {
       margin: 0;
-      font-size: 1.5em;
+      font-size: 1.8em;
     }
     header p {
       margin: 5px 0 0;
-      font-size: 0.9em;
     }
     .marquesina {
       background: #ffca28;
@@ -46,15 +51,23 @@
       animation: mover 20s linear infinite;
     }
     @keyframes mover {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
     }
-    .formulario, .resumen, .busqueda, .graficos, .reportes-toggle {
+    .formulario,
+    .resumen,
+    .busqueda,
+    .graficos,
+    .reportes-toggle {
       background: #ffffff;
       border-radius: 12px;
       padding: 15px;
       margin: 10px auto;
-      max-width: 600px;
+      max-width: 100%;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
     label {
@@ -63,12 +76,13 @@
       margin-top: 12px;
       color: #263238;
       font-weight: bold;
-      font-size: 0.95em;
     }
     label i {
       margin-right: 8px;
     }
-    input, datalist, select {
+    input,
+    datalist,
+    select {
       width: 100%;
       padding: 10px;
       margin-top: 6px;
@@ -100,7 +114,7 @@
       border-radius: 8px;
       margin: 15px auto;
       display: none;
-      max-width: 600px;
+      max-width: 100%;
     }
     table {
       width: 100%;
@@ -110,10 +124,11 @@
       border-radius: 10px;
       overflow: hidden;
     }
-    th, td {
+    th,
+    td {
       padding: 12px;
       border-bottom: 1px solid #ddd;
-      font-size: 0.9em;
+      font-size: 0.95em;
     }
     th {
       background: #0288d1;
@@ -148,17 +163,24 @@
       background: #388e3c;
     }
     @media screen and (max-width: 480px) {
-      header h1 { font-size: 1.3em; }
-      .formulario, .resumen, .busqueda, .graficos, .reportes-toggle {
-        padding: 10px;
-        margin: 8px;
+      body {
+        padding: 5px;
       }
-      th, td {
-        font-size: 0.8em;
-        padding: 8px;
+      header h1 {
+        font-size: 1.4em;
       }
+      label {
+        font-size: 0.9em;
+      }
+      input,
+      datalist,
+      select,
       .btn {
         font-size: 0.9em;
+      }
+      th,
+      td {
+        font-size: 0.8em;
       }
     }
   </style>
@@ -168,21 +190,25 @@
     <h1>Servicios EM</h1>
     <p>Boca de Remedios, Comarca Ngäbe-Buglé</p>
   </header>
-
   <div class="marquesina">
-    <span>🌐 Servicios EM - Venta de Internet Starlink por hora. ¡Solo 0.25 por hora! Conexión rápida y confiable. ¡Gracias por preferirnos! 🌟</span>
+    <span
+      >🌐 Servicios EM - Venta de Internet Starlink por hora. ¡Solo 0.25 por hora!
+      Conexión rápida y confiable. ¡Gracias por preferirnos! 🌟</span
+    >
   </div>
 
   <div class="formulario">
-    <label><i class="fas fa-user"></i> Nombre del Cliente</label>
-    <input type="text" id="cliente" list="lista-clientes">
+    <label
+      ><i class="fas fa-user"></i> Nombre del Cliente</label
+    >
+    <input type="text" id="cliente" list="lista-clientes" />
     <datalist id="lista-clientes"></datalist>
 
     <label><i class="fas fa-clock"></i> Inicio</label>
-    <input type="datetime-local" id="inicio">
+    <input type="datetime-local" id="inicio" />
 
     <label><i class="fas fa-hourglass-end"></i> Fin</label>
-    <input type="datetime-local" id="fin">
+    <input type="datetime-local" id="fin" />
 
     <button class="btn" onclick="registrarCliente()">
       <i class="fas fa-save"></i> Registrar
@@ -206,13 +232,21 @@
 
   <div class="resumen">
     <h2><i class="fas fa-chart-line"></i> Resumen</h2>
-    <p><strong>Clientes:</strong> <span id="total-clientes">0</span></p>
-    <p><strong>Horas Totales:</strong> <span id="total-horas">0.00</span> h</p>
-    <p><strong>Total Recaudado:</strong> $<span id="total-ventas">0.00</span></p>
+    <p>
+      <strong>Clientes:</strong> <span id="total-clientes">0</span>
+    </p>
+    <p>
+      <strong>Horas Totales:</strong> <span id="total-horas">0.00</span> h
+    </p>
+    <p>
+      <strong>Total Recaudado:</strong> $<span id="total-ventas">0.00</span>
+    </p>
   </div>
 
   <div class="reportes-toggle">
-    <button onclick="mostrarGraficos()"><i class="fas fa-chart-pie"></i> Ver Reportes</button>
+    <button onclick="mostrarGraficos()">
+      <i class="fas fa-chart-pie"></i> Ver Reportes
+    </button>
   </div>
 
   <div class="graficos" id="graficos-container">
@@ -221,36 +255,61 @@
   </div>
 
   <div class="busqueda">
-    <h3><i class="fas fa-calendar-alt"></i> Buscar Historial por Fecha</h3>
-    <input type="date" id="fecha-busqueda">
-    <button class="btn" onclick="buscarHistorial()">Buscar</button>
+    <h3><i class="fas fa-search"></i> Buscar Historial por Cliente y Fecha</h3>
+    <label><i class="fas fa-user"></i> Cliente</label>
+    <input type="text" id="cliente-busqueda" placeholder="Nombre cliente (opcional)" />
+    <label><i class="fas fa-calendar-alt"></i> Fecha</label>
+    <input type="date" id="fecha-busqueda" />
+    <button
+      class="btn"
+      onclick="buscarHistorialGoogleSheets(document.getElementById('cliente-busqueda').value, document.getElementById('fecha-busqueda').value)"
+    >
+      Buscar
+    </button>
     <div id="resultado-historial"></div>
   </div>
 
   <script>
-    let totalClientes = 0, totalHoras = 0, totalDinero = 0;
+    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbwOVSBpUiblbluu5YDB4MmNkbJdlBt5mVaAsOstfmiXR-czoMWwQZC0Gb35h4Lg99m3/exec";
+
+    let totalClientes = 0,
+      totalHoras = 0,
+      totalDinero = 0;
     const clientesRegistrados = new Set();
-    const hoy = new Date().toISOString().split("T")[0];
-    const keyHoy = `historial_${hoy}`;
     let registrosGraficos = [];
 
     window.onload = () => {
+      // Cargar registros del día desde localStorage para vista rápida
+      const hoy = new Date().toISOString().split("T")[0];
+      const keyHoy = `historial_${hoy}`;
       const ultima = localStorage.getItem("ultima_fecha");
       if (ultima !== hoy) {
         localStorage.setItem("ultima_fecha", hoy);
         localStorage.setItem(keyHoy, "[]");
       } else {
         const datos = JSON.parse(localStorage.getItem(keyHoy) || "[]");
-        datos.forEach(r => agregarFila(r));
+        datos.forEach((r) => agregarFila(r));
       }
       actualizarGraficos();
     };
+
+    function enviarAGoogleSheets(cliente, inicio, fin, horas, total) {
+      fetch(URL_SCRIPT, {
+        method: "POST",
+        body: JSON.stringify({ cliente, inicio, fin, horas, total }),
+        headers: { "Content-Type": "application/json" },
+      })
+        .then((res) => res.text())
+        .then((msg) => console.log("✅ Enviado a Google Sheets:", msg))
+        .catch((err) => console.error("❌ Error al enviar:", err));
+    }
 
     function registrarCliente() {
       const cliente = document.getElementById("cliente").value.trim();
       const inicio = new Date(document.getElementById("inicio").value);
       const fin = new Date(document.getElementById("fin").value);
-      if (!cliente || isNaN(inicio) || isNaN(fin)) return alert("Completa todos los campos.");
+      if (!cliente || isNaN(inicio) || isNaN(fin))
+        return alert("Completa todos los campos.");
       if (fin <= inicio) return alert("La hora de fin debe ser posterior a inicio.");
 
       const horas = (fin - inicio) / 3600000;
@@ -260,10 +319,12 @@
         inicio: inicio.toLocaleString(),
         fin: fin.toLocaleString(),
         horas: horas.toFixed(2),
-        total
+        total,
       };
 
       agregarFila(registro);
+      const hoy = new Date().toISOString().split("T")[0];
+      const keyHoy = `historial_${hoy}`;
       const historial = JSON.parse(localStorage.getItem(keyHoy) || "[]");
       historial.push(registro);
       localStorage.setItem(keyHoy, JSON.stringify(historial));
@@ -278,6 +339,14 @@
         document.getElementById("lista-clientes").appendChild(opt);
       }
 
+      enviarAGoogleSheets(
+        cliente,
+        inicio.toLocaleString(),
+        fin.toLocaleString(),
+        horas.toFixed(2),
+        total
+      );
+
       const ahora = new Date();
       const restante = fin - ahora - 5 * 60 * 1000;
       if (restante > 0) {
@@ -289,13 +358,16 @@
         }, restante);
       }
 
-      document.getElementById("cliente").value = '';
-      document.getElementById("inicio").value = '';
-      document.getElementById("fin").value = '';
+      document.getElementById("cliente").value = "";
+      document.getElementById("inicio").value = "";
+      document.getElementById("fin").value = "";
     }
 
     function agregarFila(r) {
-      const fila = document.getElementById("tabla-registros").querySelector("tbody").insertRow();
+      const fila = document
+        .getElementById("tabla-registros")
+        .querySelector("tbody")
+        .insertRow();
       fila.innerHTML = `
         <td>${r.cliente}</td>
         <td>${r.inicio}</td>
@@ -310,17 +382,48 @@
       document.getElementById("total-ventas").textContent = totalDinero.toFixed(2);
     }
 
-    function buscarHistorial() {
-      const fecha = document.getElementById("fecha-busqueda").value;
-      const datos = JSON.parse(localStorage.getItem(`historial_${fecha}`) || "[]");
-      const cont = document.getElementById("resultado-historial");
-      if (!datos.length) return (cont.innerHTML = "<p>No hay registros para esa fecha.</p>");
-      let html = '<table><thead><tr><th>Cliente</th><th>Inicio</th><th>Fin</th><th>Horas</th><th>Total</th></tr></thead><tbody>';
-      datos.forEach((r) => {
-        html += `<tr><td>${r.cliente}</td><td>${r.inicio}</td><td>${r.fin}</td><td>${r.horas}</td><td>$${r.total}</td></tr>`;
-      });
-      html += "</tbody></table>";
-      cont.innerHTML = html;
+    function buscarHistorialGoogleSheets(cliente, fecha) {
+      if (!cliente && !fecha) {
+        alert("Por favor ingresa cliente, fecha o ambos para buscar.");
+        return;
+      }
+      // Construir parámetros para la URL GET
+      let params = [];
+      if (cliente) params.push("cliente=" + encodeURIComponent(cliente));
+      if (fecha) params.push("fecha=" + encodeURIComponent(fecha));
+      const url = `${URL_SCRIPT}?${params.join("&")}`;
+
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => {
+          const cont = document.getElementById("resultado-historial");
+          if (!data.length) {
+            cont.innerHTML = "<p>No hay registros para esos parámetros.</p>";
+            return;
+          }
+          let html = `<table>
+                        <thead>
+                          <tr>
+                            <th>Cliente</th><th>Inicio</th><th>Fin</th><th>Horas</th><th>Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+          data.forEach((r) => {
+            html += `<tr>
+                       <td>${r.cliente}</td>
+                       <td>${r.inicio}</td>
+                       <td>${r.fin}</td>
+                       <td>${r.horas}</td>
+                       <td>$${r.total}</td>
+                     </tr>`;
+          });
+          html += "</tbody></table>";
+          cont.innerHTML = html;
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Error al consultar historial.");
+        });
     }
 
     function actualizarGraficos() {
@@ -332,9 +435,15 @@
         type: "bar",
         data: {
           labels,
-          datasets: [{ label: "Total por Cliente ($)", data: dataValores, backgroundColor: "#4fc3f7" }]
+          datasets: [
+            {
+              label: "Total por Cliente ($)",
+              data: dataValores,
+              backgroundColor: "#4fc3f7",
+            },
+          ],
         },
-        options: { responsive: true }
+        options: { responsive: true },
       });
 
       const ctx2 = document.getElementById("graficoPastel").getContext("2d");
@@ -342,13 +451,17 @@
         type: "doughnut",
         data: {
           labels,
-          datasets: [{
-            label: "Distribución $",
-            data: dataValores,
-            backgroundColor: labels.map((_, i) => `hsl(${i * 40}, 70%, 60%)`)
-          }]
+          datasets: [
+            {
+              label: "Distribución $",
+              data: dataValores,
+              backgroundColor: labels.map(
+                (_, i) => `hsl(${i * 40}, 70%, 60%)`
+              ),
+            },
+          ],
         },
-        options: { responsive: true }
+        options: { responsive: true },
       });
     }
 
