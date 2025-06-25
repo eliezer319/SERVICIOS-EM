@@ -2,26 +2,18 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📡 Servicios EM - Registro de Clientes</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
-    rel="stylesheet"
-  />
-  <script
-    src="https://kit.fontawesome.com/a2e0b5e6c4.js"
-    crossorigin="anonymous"
-  ></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Servicios EM - Registro y Búsqueda con Firebase</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
-      font-family: "Roboto", sans-serif;
+      font-family: Arial, sans-serif;
+      padding: 15px;
       background: linear-gradient(to bottom, #e3f2fd, #e8f5e9);
+      color: #263238;
       margin: 0;
-      padding: 10px;
+      min-height: 100vh;
     }
     header {
       background-color: #01579b;
@@ -29,21 +21,26 @@
       padding: 20px;
       text-align: center;
       border-radius: 0 0 12px 12px;
+      margin-bottom: 15px;
     }
     header h1 {
       margin: 0;
-      font-size: 1.8em;
+      font-size: 2em;
     }
     header p {
       margin: 5px 0 0;
+      font-size: 1em;
+      font-weight: 500;
     }
     .marquesina {
       background: #ffca28;
       color: #1a237e;
-      padding: 10px;
+      padding: 10px 0;
       font-weight: bold;
       overflow: hidden;
       white-space: nowrap;
+      margin-bottom: 20px;
+      border-radius: 8px;
     }
     .marquesina span {
       display: inline-block;
@@ -58,129 +55,76 @@
         transform: translateX(-100%);
       }
     }
-    .formulario,
-    .resumen,
-    .busqueda,
-    .graficos,
-    .reportes-toggle {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 15px;
-      margin: 10px auto;
-      max-width: 100%;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-    label {
-      display: flex;
-      align-items: center;
-      margin-top: 12px;
-      color: #263238;
-      font-weight: bold;
-    }
-    label i {
-      margin-right: 8px;
-    }
-    input,
-    datalist,
-    select {
-      width: 100%;
+    input, button {
       padding: 10px;
-      margin-top: 6px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
+      margin: 8px 0;
       font-size: 1em;
-    }
-    .btn {
-      background: #0288d1;
-      color: #fff;
-      font-size: 1em;
-      border: none;
-      border-radius: 10px;
-      padding: 10px;
-      margin-top: 15px;
-      width: 100%;
-      display: block;
-      cursor: pointer;
-    }
-    .btn:hover {
-      background: #0277bd;
-    }
-    .alerta {
-      background: #ffeb3b;
-      color: #c62828;
-      font-weight: bold;
-      padding: 15px;
-      text-align: center;
       border-radius: 8px;
-      margin: 15px auto;
-      display: none;
-      max-width: 100%;
+      border: 1px solid #ccc;
+      width: 100%;
+      max-width: 400px;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+    input:focus {
+      border-color: #0288d1;
+      outline: none;
+    }
+    button {
+      background-color: #0288d1;
+      color: white;
+      border: none;
+      cursor: pointer;
+      max-width: 400px;
+      border-radius: 10px;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0277bd;
+    }
+    h2 {
+      color: #01579b;
+      margin-top: 30px;
+      margin-bottom: 10px;
     }
     table {
-      width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
-      background: #fafafa;
-      border-radius: 10px;
+      width: 100%;
+      max-width: 700px;
+      background: #ffffffdd;
+      border-radius: 12px;
       overflow: hidden;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
     }
-    th,
-    td {
-      padding: 12px;
+    th, td {
+      padding: 12px 15px;
       border-bottom: 1px solid #ddd;
+      text-align: left;
       font-size: 0.95em;
     }
     th {
-      background: #0288d1;
+      background-color: #0288d1;
       color: white;
+      font-weight: 600;
     }
     tr:nth-child(even) {
-      background: #f1f1f1;
+      background-color: #f1f9ff;
     }
-    .resumen h2 {
-      color: #01579b;
-      font-size: 1.2em;
+    #registros-dia, #resultados-busqueda {
+      margin-top: 10px;
     }
-    .graficos canvas {
-      max-width: 100%;
-      height: 250px;
-      margin-bottom: 20px;
+    #resultados-busqueda p, #registros-dia p {
+      font-style: italic;
+      color: #555;
+      max-width: 700px;
     }
-    #graficos-container {
-      display: none;
-    }
-    .reportes-toggle button {
-      background: #43a047;
-      color: white;
-      border: none;
-      padding: 10px;
-      border-radius: 10px;
-      width: 100%;
-      font-size: 1em;
-      cursor: pointer;
-    }
-    .reportes-toggle button:hover {
-      background: #388e3c;
-    }
-    @media screen and (max-width: 480px) {
-      body {
-        padding: 5px;
+    @media (max-width: 480px) {
+      input, button {
+        max-width: 100%;
       }
-      header h1 {
-        font-size: 1.4em;
-      }
-      label {
+      table {
+        max-width: 100%;
         font-size: 0.9em;
-      }
-      input,
-      datalist,
-      select,
-      .btn {
-        font-size: 0.9em;
-      }
-      th,
-      td {
-        font-size: 0.8em;
       }
     }
   </style>
@@ -191,284 +135,203 @@
     <p>Boca de Remedios, Comarca Ngäbe-Buglé</p>
   </header>
   <div class="marquesina">
-    <span
-      >🌐 Servicios EM - Venta de Internet Starlink por hora. ¡Solo 0.25 por hora!
-      Conexión rápida y confiable. ¡Gracias por preferirnos! 🌟</span
-    >
+    <span>🌐 Servicios EM - Venta de Internet Starlink por hora. ¡Solo 0.25 por hora! Conexión rápida y confiable. ¡Gracias por preferirnos! 🌟</span>
   </div>
 
-  <div class="formulario">
-    <label
-      ><i class="fas fa-user"></i> Nombre del Cliente</label
-    >
-    <input type="text" id="cliente" list="lista-clientes" />
-    <datalist id="lista-clientes"></datalist>
+  <h2>Registrar Cliente</h2>
+  <input type="text" id="cliente" placeholder="Nombre del cliente" />
+  <input type="datetime-local" id="inicio" />
+  <input type="datetime-local" id="fin" />
+  <button onclick="registrarCliente()">Guardar Registro</button>
 
-    <label><i class="fas fa-clock"></i> Inicio</label>
-    <input type="datetime-local" id="inicio" />
+  <h2>Registros del día (persistentes)</h2>
+  <div id="registros-dia"><p>Cargando registros...</p></div>
 
-    <label><i class="fas fa-hourglass-end"></i> Fin</label>
-    <input type="datetime-local" id="fin" />
+  <h2>Buscar por Cliente</h2>
+  <input type="text" id="busqueda-cliente" placeholder="Nombre cliente para buscar" />
+  <button onclick="buscarCliente()">Buscar</button>
+  <div id="resultados-busqueda"></div>
 
-    <button class="btn" onclick="registrarCliente()">
-      <i class="fas fa-save"></i> Registrar
-    </button>
-  </div>
+<script>
+  // Configura tu Firebase aquí (reemplaza con tus datos)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCMvMidGE3EJMGWTiHwMCeiIFkY7TlNnPk",
+    authDomain: "servicios-em.firebaseapp.com",
+    projectId: "servicios-em",
+    storageBucket: "servicios-em.appspot.com",
+    messagingSenderId: "967794596063",
+    appId: "1:967794596063:web:9249e6e6e9c4a003eff16a"
+  };
 
-  <div class="alerta" id="alerta"></div>
+  // Inicializa Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  <table id="tabla-registros">
-    <thead>
-      <tr>
-        <th>Cliente</th>
-        <th>Inicio</th>
-        <th>Fin</th>
-        <th>Horas</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  // Llaves para localStorage
+  const LS_KEY = "registros_dia";
+  const LS_DAY_KEY = "registros_dia_fecha";
 
-  <div class="resumen">
-    <h2><i class="fas fa-chart-line"></i> Resumen</h2>
-    <p>
-      <strong>Clientes:</strong> <span id="total-clientes">0</span>
-    </p>
-    <p>
-      <strong>Horas Totales:</strong> <span id="total-horas">0.00</span> h
-    </p>
-    <p>
-      <strong>Total Recaudado:</strong> $<span id="total-ventas">0.00</span>
-    </p>
-  </div>
+  // Al cargar la página:
+  window.onload = () => {
+    checkYLimpiarLocal();
+  };
 
-  <div class="reportes-toggle">
-    <button onclick="mostrarGraficos()">
-      <i class="fas fa-chart-pie"></i> Ver Reportes
-    </button>
-  </div>
+  function checkYLimpiarLocal() {
+    const hoyStr = new Date().toISOString().slice(0,10); // 'YYYY-MM-DD'
+    const guardadoDia = localStorage.getItem(LS_DAY_KEY);
 
-  <div class="graficos" id="graficos-container">
-    <canvas id="graficoBarras"></canvas>
-    <canvas id="graficoPastel"></canvas>
-  </div>
-
-  <div class="busqueda">
-    <h3><i class="fas fa-search"></i> Buscar Historial por Cliente y Fecha</h3>
-    <label><i class="fas fa-user"></i> Cliente</label>
-    <input type="text" id="cliente-busqueda" placeholder="Nombre cliente (opcional)" />
-    <label><i class="fas fa-calendar-alt"></i> Fecha</label>
-    <input type="date" id="fecha-busqueda" />
-    <button
-      class="btn"
-      onclick="buscarHistorialGoogleSheets(document.getElementById('cliente-busqueda').value, document.getElementById('fecha-busqueda').value)"
-    >
-      Buscar
-    </button>
-    <div id="resultado-historial"></div>
-  </div>
-
-  <script>
-    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbwOVSBpUiblbluu5YDB4MmNkbJdlBt5mVaAsOstfmiXR-czoMWwQZC0Gb35h4Lg99m3/exec";
-
-    let totalClientes = 0,
-      totalHoras = 0,
-      totalDinero = 0;
-    const clientesRegistrados = new Set();
-    let registrosGraficos = [];
-
-    window.onload = () => {
-      // Cargar registros del día desde localStorage para vista rápida
-      const hoy = new Date().toISOString().split("T")[0];
-      const keyHoy = `historial_${hoy}`;
-      const ultima = localStorage.getItem("ultima_fecha");
-      if (ultima !== hoy) {
-        localStorage.setItem("ultima_fecha", hoy);
-        localStorage.setItem(keyHoy, "[]");
+    if (guardadoDia !== hoyStr) {
+      // Nuevo día, limpiar registros guardados localmente
+      localStorage.setItem(LS_KEY, JSON.stringify([]));
+      localStorage.setItem(LS_DAY_KEY, hoyStr);
+      document.getElementById("registros-dia").innerHTML = "<p>No hay registros para mostrar hoy.</p>";
+    } else {
+      // Mismo día, mostrar registros guardados
+      const registros = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+      if (registros.length) {
+        mostrarRegistrosDia(registros);
       } else {
-        const datos = JSON.parse(localStorage.getItem(keyHoy) || "[]");
-        datos.forEach((r) => agregarFila(r));
+        document.getElementById("registros-dia").innerHTML = "<p>No hay registros para mostrar hoy.</p>";
       }
-      actualizarGraficos();
-    };
-
-    function enviarAGoogleSheets(cliente, inicio, fin, horas, total) {
-      fetch(URL_SCRIPT, {
-        method: "POST",
-        body: JSON.stringify({ cliente, inicio, fin, horas, total }),
-        headers: { "Content-Type": "application/json" },
-      })
-        .then((res) => res.text())
-        .then((msg) => console.log("✅ Enviado a Google Sheets:", msg))
-        .catch((err) => console.error("❌ Error al enviar:", err));
     }
+  }
 
-    function registrarCliente() {
-      const cliente = document.getElementById("cliente").value.trim();
-      const inicio = new Date(document.getElementById("inicio").value);
-      const fin = new Date(document.getElementById("fin").value);
-      if (!cliente || isNaN(inicio) || isNaN(fin))
-        return alert("Completa todos los campos.");
-      if (fin <= inicio) return alert("La hora de fin debe ser posterior a inicio.");
-
-      const horas = (fin - inicio) / 3600000;
-      const total = (horas * 0.25).toFixed(2);
-      const registro = {
-        cliente,
-        inicio: inicio.toLocaleString(),
-        fin: fin.toLocaleString(),
-        horas: horas.toFixed(2),
-        total,
-      };
-
-      agregarFila(registro);
-      const hoy = new Date().toISOString().split("T")[0];
-      const keyHoy = `historial_${hoy}`;
-      const historial = JSON.parse(localStorage.getItem(keyHoy) || "[]");
-      historial.push(registro);
-      localStorage.setItem(keyHoy, JSON.stringify(historial));
-
-      registrosGraficos.push(registro);
-      actualizarGraficos();
-
-      if (!clientesRegistrados.has(cliente)) {
-        clientesRegistrados.add(cliente);
-        const opt = document.createElement("option");
-        opt.value = cliente;
-        document.getElementById("lista-clientes").appendChild(opt);
-      }
-
-      enviarAGoogleSheets(
-        cliente,
-        inicio.toLocaleString(),
-        fin.toLocaleString(),
-        horas.toFixed(2),
-        total
-      );
-
-      const ahora = new Date();
-      const restante = fin - ahora - 5 * 60 * 1000;
-      if (restante > 0) {
-        setTimeout(() => {
-          const alerta = document.getElementById("alerta");
-          alerta.textContent = `⚠️ Al cliente "${cliente}" le quedan 5 minutos.`;
-          alerta.style.display = "block";
-          setTimeout(() => (alerta.style.display = "none"), 30000);
-        }, restante);
-      }
-
-      document.getElementById("cliente").value = "";
-      document.getElementById("inicio").value = "";
-      document.getElementById("fin").value = "";
+  function mostrarRegistrosDia(registros) {
+    const div = document.getElementById("registros-dia");
+    if (!registros.length) {
+      div.innerHTML = "<p>No hay registros para mostrar hoy.</p>";
+      return;
     }
-
-    function agregarFila(r) {
-      const fila = document
-        .getElementById("tabla-registros")
-        .querySelector("tbody")
-        .insertRow();
-      fila.innerHTML = `
+    let html = `<table>
+      <thead>
+        <tr><th>Cliente</th><th>Inicio</th><th>Fin</th><th>Horas</th><th>Total</th></tr>
+      </thead><tbody>`;
+    registros.forEach(r => {
+      html += `<tr>
         <td>${r.cliente}</td>
         <td>${r.inicio}</td>
         <td>${r.fin}</td>
-        <td>${r.horas}</td>
-        <td>$${r.total}</td>`;
-      totalClientes++;
-      totalHoras += parseFloat(r.horas);
-      totalDinero += parseFloat(r.total);
-      document.getElementById("total-clientes").textContent = totalClientes;
-      document.getElementById("total-horas").textContent = totalHoras.toFixed(2);
-      document.getElementById("total-ventas").textContent = totalDinero.toFixed(2);
+        <td>${Number(r.horas).toFixed(2)}</td>
+        <td>$${Number(r.total).toFixed(2)}</td>
+      </tr>`;
+    });
+    html += "</tbody></table>";
+    div.innerHTML = html;
+  }
+
+  function mostrarResultadosBusqueda(registros) {
+    const div = document.getElementById("resultados-busqueda");
+    if (!registros.length) {
+      div.innerHTML = "<p>No se encontraron registros para ese cliente.</p>";
+      return;
+    }
+    let html = `<table>
+      <thead>
+        <tr><th>Cliente</th><th>Inicio</th><th>Fin</th><th>Horas</th><th>Total</th></tr>
+      </thead><tbody>`;
+    registros.forEach(r => {
+      html += `<tr>
+        <td>${r.cliente}</td>
+        <td>${r.inicio}</td>
+        <td>${r.fin}</td>
+        <td>${Number(r.horas).toFixed(2)}</td>
+        <td>$${Number(r.total).toFixed(2)}</td>
+      </tr>`;
+    });
+    html += "</tbody></table>";
+    div.innerHTML = html;
+  }
+
+  // Guarda localmente para mantener la lista del día
+  function guardarLocal(registro) {
+    let registros = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+    registros.push(registro);
+    localStorage.setItem(LS_KEY, JSON.stringify(registros));
+  }
+
+  // Función para registrar cliente (guardar en Firebase y local)
+  function registrarCliente() {
+    const cliente = document.getElementById("cliente").value.trim();
+    const inicioVal = document.getElementById("inicio").value;
+    const finVal = document.getElementById("fin").value;
+    if (!cliente || !inicioVal || !finVal) {
+      alert("Por favor completa todos los campos.");
+      return;
+    }
+    const inicio = new Date(inicioVal);
+    const fin = new Date(finVal);
+    if (fin <= inicio) {
+      alert("La hora de fin debe ser posterior al inicio.");
+      return;
+    }
+    const horas = (fin - inicio) / (1000 * 60 * 60);
+    const total = (horas * 0.25).toFixed(2);
+
+    const registroLocal = {
+      cliente,
+      inicio: inicio.toLocaleString(),
+      fin: fin.toLocaleString(),
+      horas: Number(horas.toFixed(2)),
+      total: Number(total)
+    };
+
+    // Guardar localmente y actualizar tabla diaria
+    guardarLocal(registroLocal);
+    mostrarRegistrosDia(JSON.parse(localStorage.getItem(LS_KEY)));
+
+    // Guardar en Firebase
+    db.collection("registros").add({
+      cliente: cliente,
+      clienteLower: cliente.toLowerCase(),
+      inicio: firebase.firestore.Timestamp.fromDate(inicio),
+      fin: firebase.firestore.Timestamp.fromDate(fin),
+      horas: Number(horas.toFixed(2)),
+      total: Number(total)
+    })
+    .then(() => {
+      alert("Registro guardado correctamente.");
+      // Limpiar inputs
+      document.getElementById("cliente").value = "";
+      document.getElementById("inicio").value = "";
+      document.getElementById("fin").value = "";
+    })
+    .catch((error) => {
+      console.error("Error guardando registro:", error);
+      alert("Error al guardar el registro.");
+    });
+  }
+
+  // Buscar cliente solo por nombre (sin fecha)
+  function buscarCliente() {
+    const clienteBuscado = document.getElementById("busqueda-cliente").value.trim().toLowerCase();
+    if (!clienteBuscado) {
+      alert("Ingresa un nombre de cliente para buscar.");
+      return;
     }
 
-    function buscarHistorialGoogleSheets(cliente, fecha) {
-      if (!cliente && !fecha) {
-        alert("Por favor ingresa cliente, fecha o ambos para buscar.");
-        return;
-      }
-      // Construir parámetros para la URL GET
-      let params = [];
-      if (cliente) params.push("cliente=" + encodeURIComponent(cliente));
-      if (fecha) params.push("fecha=" + encodeURIComponent(fecha));
-      const url = `${URL_SCRIPT}?${params.join("&")}`;
-
-      fetch(url)
-        .then((res) => res.json())
-        .then((data) => {
-          const cont = document.getElementById("resultado-historial");
-          if (!data.length) {
-            cont.innerHTML = "<p>No hay registros para esos parámetros.</p>";
-            return;
-          }
-          let html = `<table>
-                        <thead>
-                          <tr>
-                            <th>Cliente</th><th>Inicio</th><th>Fin</th><th>Horas</th><th>Total</th>
-                          </tr>
-                        </thead>
-                        <tbody>`;
-          data.forEach((r) => {
-            html += `<tr>
-                       <td>${r.cliente}</td>
-                       <td>${r.inicio}</td>
-                       <td>${r.fin}</td>
-                       <td>${r.horas}</td>
-                       <td>$${r.total}</td>
-                     </tr>`;
+    db.collection("registros")
+      .where("clienteLower", "==", clienteBuscado)
+      .get()
+      .then((querySnapshot) => {
+        const resultados = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          resultados.push({
+            cliente: data.cliente,
+            inicio: data.inicio.toDate().toLocaleString(),
+            fin: data.fin.toDate().toLocaleString(),
+            horas: data.horas,
+            total: data.total
           });
-          html += "</tbody></table>";
-          cont.innerHTML = html;
-        })
-        .catch((err) => {
-          console.error(err);
-          alert("Error al consultar historial.");
         });
-    }
 
-    function actualizarGraficos() {
-      const labels = registrosGraficos.map((r) => r.cliente);
-      const dataValores = registrosGraficos.map((r) => parseFloat(r.total));
-
-      const ctx1 = document.getElementById("graficoBarras").getContext("2d");
-      new Chart(ctx1, {
-        type: "bar",
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Total por Cliente ($)",
-              data: dataValores,
-              backgroundColor: "#4fc3f7",
-            },
-          ],
-        },
-        options: { responsive: true },
+        mostrarResultadosBusqueda(resultados);
+      })
+      .catch((error) => {
+        console.error("Error al buscar:", error);
+        alert("Error al buscar los registros.");
       });
-
-      const ctx2 = document.getElementById("graficoPastel").getContext("2d");
-      new Chart(ctx2, {
-        type: "doughnut",
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Distribución $",
-              data: dataValores,
-              backgroundColor: labels.map(
-                (_, i) => `hsl(${i * 40}, 70%, 60%)`
-              ),
-            },
-          ],
-        },
-        options: { responsive: true },
-      });
-    }
-
-    function mostrarGraficos() {
-      const cont = document.getElementById("graficos-container");
-      cont.style.display = cont.style.display === "none" ? "block" : "none";
-    }
-  </script>
+  }
+</script>
 </body>
 </html>
