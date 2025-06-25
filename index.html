@@ -8,9 +8,11 @@
   <script src="https://kit.fontawesome.com/a2e0b5e6c4.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: 'Roboto', sans-serif;
+      font-family: "Roboto", sans-serif;
       background: linear-gradient(to bottom, #e3f2fd, #e8f5e9);
       margin: 0;
       padding: 10px;
@@ -21,6 +23,14 @@
       padding: 20px;
       text-align: center;
       border-radius: 0 0 12px 12px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.5em;
+    }
+    header p {
+      margin: 5px 0 0;
+      font-size: 0.9em;
     }
     .marquesina {
       background: #ffca28;
@@ -44,7 +54,7 @@
       border-radius: 12px;
       padding: 15px;
       margin: 10px auto;
-      max-width: 800px;
+      max-width: 600px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
     label {
@@ -53,6 +63,7 @@
       margin-top: 12px;
       color: #263238;
       font-weight: bold;
+      font-size: 0.95em;
     }
     label i {
       margin-right: 8px;
@@ -89,7 +100,7 @@
       border-radius: 8px;
       margin: 15px auto;
       display: none;
-      max-width: 800px;
+      max-width: 600px;
     }
     table {
       width: 100%;
@@ -102,8 +113,7 @@
     th, td {
       padding: 12px;
       border-bottom: 1px solid #ddd;
-      font-size: 0.95em;
-      text-align: center;
+      font-size: 0.9em;
     }
     th {
       background: #0288d1;
@@ -111,6 +121,10 @@
     }
     tr:nth-child(even) {
       background: #f1f1f1;
+    }
+    .resumen h2 {
+      color: #01579b;
+      font-size: 1.2em;
     }
     .graficos canvas {
       max-width: 100%;
@@ -133,16 +147,18 @@
     .reportes-toggle button:hover {
       background: #388e3c;
     }
-    @media (max-width: 600px) {
-      header h1 {
-        font-size: 1.4em;
+    @media screen and (max-width: 480px) {
+      header h1 { font-size: 1.3em; }
+      .formulario, .resumen, .busqueda, .graficos, .reportes-toggle {
+        padding: 10px;
+        margin: 8px;
       }
       th, td {
-        font-size: 0.85em;
+        font-size: 0.8em;
         padding: 8px;
       }
-      .graficos canvas {
-        height: 200px;
+      .btn {
+        font-size: 0.9em;
       }
     }
   </style>
@@ -168,7 +184,9 @@
     <label><i class="fas fa-hourglass-end"></i> Fin</label>
     <input type="datetime-local" id="fin">
 
-    <button class="btn" onclick="registrarCliente()"><i class="fas fa-save"></i> Registrar</button>
+    <button class="btn" onclick="registrarCliente()">
+      <i class="fas fa-save"></i> Registrar
+    </button>
   </div>
 
   <div class="alerta" id="alerta"></div>
@@ -249,6 +267,7 @@
       const historial = JSON.parse(localStorage.getItem(keyHoy) || "[]");
       historial.push(registro);
       localStorage.setItem(keyHoy, JSON.stringify(historial));
+
       registrosGraficos.push(registro);
       actualizarGraficos();
 
@@ -260,13 +279,13 @@
       }
 
       const ahora = new Date();
-      const restante = fin - ahora - (5 * 60 * 1000);
+      const restante = fin - ahora - 5 * 60 * 1000;
       if (restante > 0) {
         setTimeout(() => {
           const alerta = document.getElementById("alerta");
           alerta.textContent = `⚠️ Al cliente "${cliente}" le quedan 5 minutos.`;
           alerta.style.display = "block";
-          setTimeout(() => alerta.style.display = "none", 30000);
+          setTimeout(() => (alerta.style.display = "none"), 30000);
         }, restante);
       }
 
@@ -276,8 +295,13 @@
     }
 
     function agregarFila(r) {
-      const fila = document.querySelector("#tabla-registros tbody").insertRow();
-      fila.innerHTML = `<td>${r.cliente}</td><td>${r.inicio}</td><td>${r.fin}</td><td>${r.horas}</td><td>$${r.total}</td>`;
+      const fila = document.getElementById("tabla-registros").querySelector("tbody").insertRow();
+      fila.innerHTML = `
+        <td>${r.cliente}</td>
+        <td>${r.inicio}</td>
+        <td>${r.fin}</td>
+        <td>${r.horas}</td>
+        <td>$${r.total}</td>`;
       totalClientes++;
       totalHoras += parseFloat(r.horas);
       totalDinero += parseFloat(r.total);
@@ -290,29 +314,25 @@
       const fecha = document.getElementById("fecha-busqueda").value;
       const datos = JSON.parse(localStorage.getItem(`historial_${fecha}`) || "[]");
       const cont = document.getElementById("resultado-historial");
-      if (!datos.length) return cont.innerHTML = "<p>No hay registros para esa fecha.</p>";
+      if (!datos.length) return (cont.innerHTML = "<p>No hay registros para esa fecha.</p>");
       let html = '<table><thead><tr><th>Cliente</th><th>Inicio</th><th>Fin</th><th>Horas</th><th>Total</th></tr></thead><tbody>';
-      datos.forEach(r => {
+      datos.forEach((r) => {
         html += `<tr><td>${r.cliente}</td><td>${r.inicio}</td><td>${r.fin}</td><td>${r.horas}</td><td>$${r.total}</td></tr>`;
       });
-      html += '</tbody></table>';
+      html += "</tbody></table>";
       cont.innerHTML = html;
     }
 
     function actualizarGraficos() {
-      const labels = registrosGraficos.map(r => r.cliente);
-      const dataValores = registrosGraficos.map(r => parseFloat(r.total));
+      const labels = registrosGraficos.map((r) => r.cliente);
+      const dataValores = registrosGraficos.map((r) => parseFloat(r.total));
 
       const ctx1 = document.getElementById("graficoBarras").getContext("2d");
       new Chart(ctx1, {
         type: "bar",
         data: {
           labels,
-          datasets: [{
-            label: "Total por Cliente ($)",
-            data: dataValores,
-            backgroundColor: "#4fc3f7"
-          }]
+          datasets: [{ label: "Total por Cliente ($)", data: dataValores, backgroundColor: "#4fc3f7" }]
         },
         options: { responsive: true }
       });
